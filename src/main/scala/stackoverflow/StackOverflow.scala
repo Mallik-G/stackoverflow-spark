@@ -13,8 +13,8 @@ case class Posting(postingType: Int, id: Int, acceptedAnswer: Option[Int],
 
 /** The main class */
 object StackOverflow extends StackOverflow {
-  val cores = 5
-  @transient lazy val conf: SparkConf = new SparkConf().setAppName("StackOverflow").setMaster(s"local[$cores]").set("spark.executor.memory", "10g")
+  @transient lazy val conf: SparkConf = new SparkConf().setAppName("StackOverflow").
+    setMaster("local[5]").set("spark.executor.memory", "10g")
   @transient lazy val sc: SparkContext = new SparkContext(conf)
 
   /** Main function */
@@ -29,9 +29,9 @@ object StackOverflow extends StackOverflow {
     assert(vectorsCount == 2121822, "Incorrect number of vectors: " + vectorsCount)
 
     val means = kmeans(sampleVectors(vectors), vectors, debug = true)
-    val results = clusterResults(means, vectors)
+    //val results = clusterResults(means, vectors)
     debug()
-    printResults(results)
+    //printResults(results)
     sc.stop()
 
     def debug(): Unit = {
@@ -353,7 +353,7 @@ class StackOverflow extends Serializable {
       val medianScore: Int = {
         val mid: Int = scores.length / 2
         if (scores.length % 2 == 0) {
-          (scores(mid) + scores(mid + 1)) / 2
+          (scores(mid) + scores(mid - 1)) / 2
         } else {
           scores(mid)
         }
