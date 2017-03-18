@@ -24,7 +24,7 @@ object StackOverflow extends StackOverflow {
     val raw = rawPostings(lines)
     val grouped = groupedPostings(raw)
     val scored = scoredPostings(grouped)
-    val vectors = vectorPostings(scored).cache()
+    val vectors = vectorPostings(scored)
     val vectorsCount = vectors.count()
     assert(vectorsCount == 2121822, "Incorrect number of vectors: " + vectorsCount)
 
@@ -100,7 +100,6 @@ class StackOverflow extends Serializable {
    * @return
    */
   def groupedPostings(postings: RDD[Posting]): RDD[(Int, Iterable[(Posting, Posting)])] = {
-    postings.cache()
     val questions = postings.filter {
       p => p.postingType == 1
     }.map {
@@ -183,7 +182,7 @@ class StackOverflow extends Serializable {
       case (question, score) => (firstLangInTag(question.tags, langs).getOrElse(-1) * langSpread, score)
     }.filter {
       case (iLang, score) => iLang >= 0
-    }
+    }.cache()
   }
 
   /** Sample the vectors */
