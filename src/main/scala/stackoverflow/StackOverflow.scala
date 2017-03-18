@@ -13,24 +13,33 @@ case class Posting(postingType: Int, id: Int, acceptedAnswer: Option[Int],
 
 /** The main class */
 object StackOverflow extends StackOverflow {
-
-  @transient lazy val conf: SparkConf = new SparkConf().setMaster("local").setAppName("StackOverflow")
+  val cores = 5
+  @transient lazy val conf: SparkConf = new SparkConf().setAppName("StackOverflow").setMaster(s"local[$cores]").set("spark.executor.memory", "10g")
   @transient lazy val sc: SparkContext = new SparkContext(conf)
 
   /** Main function */
   def main(args: Array[String]): Unit = {
-
+    
     val lines = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
     val raw = rawPostings(lines)
     val grouped = groupedPostings(raw)
-    val scored = scoredPostings(grouped)
-    val vectors = vectorPostings(scored)
+    //val scored = scoredPostings(grouped)
+    //val vectors = vectorPostings(scored)
     //    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
 
-    val means = kmeans(sampleVectors(vectors), vectors, debug = true)
-    val results = clusterResults(means, vectors)
-    printResults(results)
+    //val means = kmeans(sampleVectors(vectors), vectors, debug = true)
+    //val results = clusterResults(means, vectors)
+    debug()
+    //printResults(results)
+    sc.stop()
+    
+    def debug(): Unit = {
+      val rawDebugString = raw.toDebugString
+      val groupedDebugString = grouped.toDebugString
+      println(s"raw:\n$rawDebugString\ngrouped:\n$groupedDebugString")
+    }
   }
+  
 }
 
 /** The parsing and kmeans methods */
@@ -73,9 +82,34 @@ class StackOverflow extends Serializable {
         tags = if (arr.length >= 6) Some(arr(5).intern()) else None)
     })
 
-  /** Group the questions and answers together */
+  /**
+   * Group the questions and answers together
+   *
+   * To obtain this, in the groupedPostings method, 
+   * first filter the questions and answers separately 
+   * and then prepare them for a join operation 
+   * by extracting the QID value in the first element of a tuple. 
+   * Then, use one of the join operations (which one?) to obtain an RDD[(QID, (Question, Answer))]. 
+   * Then, the last step is to obtain an RDD[(QID, Iterable[(Question, Answer)])]. 
+   * How can you do that, what method do you use to group by the key of a pair RDD?
+   *
+   * @param postings
+   * @return
+   */
   def groupedPostings(postings: RDD[Posting]): RDD[(Int, Iterable[(Posting, Posting)])] = {
-    ???
+    postings.cache()
+    val questions = postings.filter{
+      p => p.postingType == 1 
+    }.map {
+      q => (q.id, q)
+    }
+    val answers = postings.filter{
+      p => p.postingType == 2 
+    }.map {
+      a => (a.id, a)
+    }
+    val ret = questions.join(answers).groupByKey()
+    ret
   }
 
   /** Compute the maximum score for each posting */
