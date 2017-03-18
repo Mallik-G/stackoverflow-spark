@@ -24,8 +24,9 @@ object StackOverflow extends StackOverflow {
     val raw = rawPostings(lines)
     val grouped = groupedPostings(raw)
     val scored = scoredPostings(grouped)
-    //val vectors = vectorPostings(scored)
-    //    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
+    val vectors = vectorPostings(scored)
+    val vectorsCount = vectors.count()
+    assert(vectorsCount == 2121822, "Incorrect number of vectors: " + vectorsCount)
 
     //val means = kmeans(sampleVectors(vectors), vectors, debug = true)
     //val results = clusterResults(means, vectors)
@@ -37,7 +38,8 @@ object StackOverflow extends StackOverflow {
       val rawDebugString = raw.toDebugString
       val groupedDebugString = grouped.toDebugString
       val scoredDebugString = scored.toDebugString
-      println(s"raw:\n$rawDebugString\ngrouped:\n$groupedDebugString\nscored:\n$scoredDebugString")
+      val vectorsDebugString = vectors.toDebugString
+      println(s"raw:\n$rawDebugString\n\ngrouped:\n$groupedDebugString\n\nscored:\n$scoredDebugString\n\nvectors:\n$vectorsDebugString")
     }
   }
 
@@ -114,9 +116,9 @@ class StackOverflow extends Serializable {
 
   /**
    * Compute the maximum score for each posting
-   * 
-   * return an RDD containing pairs of (a) questions and 
-   * (b) the score of the answer with the highest score 
+   *
+   * return an RDD containing pairs of (a) questions and
+   * (b) the score of the answer with the highest score
    * (note: this does not have to be the answer marked as "acceptedAnswer"!).
    *
    * @param grouped
@@ -137,16 +139,31 @@ class StackOverflow extends Serializable {
     }
 
     grouped.values.map {
-      pairs => {
-        val unzipped = pairs unzip
-        val answers = unzipped._2.toArray
-        val questions = unzipped._1.toArray
-        (questions(0), answerHighScore(answers))
-      }
+      pairs =>
+        {
+          val unzipped = pairs unzip
+          val answers = unzipped._2.toArray
+          val questions = unzipped._1.toArray
+          (questions(0), answerHighScore(answers))
+        }
     }
   }
 
-  /** Compute the vectors for the kmeans */
+  /**
+   * Compute the vectors for the kmeans
+   *
+   * Transform the scored RDD into a vectors RDD containing the vectors to be clustered. 
+   * The vectors should be pairs with two components (in the listed order!):
+   * - Index of the language (in the langs list) multiplied by the langSpread factor.
+   * - The highest answer score (computed above).
+   * 
+   * The langSpread factor is provided (set to 50000). 
+   * Basically, it makes sure posts about different programming languages 
+   * have at least distance 50000 using the distance measure provided by the euclideanDist function.
+   *
+   * @param scored
+   * @return
+   */
   def vectorPostings(scored: RDD[(Posting, Int)]): RDD[(Int, Int)] = {
     /** Return optional index of first language that occurs in `tags`. */
     def firstLangInTag(tag: Option[String], ls: List[String]): Option[Int] = {
@@ -162,7 +179,11 @@ class StackOverflow extends Serializable {
       }
     }
 
-    ???
+    scored.map {
+      case (question, score) => (firstLangInTag(question.tags, langs).getOrElse(-1) * langSpread, score)
+    }.filter {
+      case (iLang, score) => iLang >= 0
+    }
   }
 
   /** Sample the vectors */
