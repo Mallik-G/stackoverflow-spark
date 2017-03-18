@@ -19,7 +19,7 @@ object StackOverflow extends StackOverflow {
 
   /** Main function */
   def main(args: Array[String]): Unit = {
-    
+
     val lines = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
     val raw = rawPostings(lines)
     val grouped = groupedPostings(raw)
@@ -32,14 +32,14 @@ object StackOverflow extends StackOverflow {
     debug()
     //printResults(results)
     sc.stop()
-    
+
     def debug(): Unit = {
       val rawDebugString = raw.toDebugString
       val groupedDebugString = grouped.toDebugString
       println(s"raw:\n$rawDebugString\ngrouped:\n$groupedDebugString")
     }
   }
-  
+
 }
 
 /** The parsing and kmeans methods */
@@ -85,12 +85,12 @@ class StackOverflow extends Serializable {
   /**
    * Group the questions and answers together
    *
-   * To obtain this, in the groupedPostings method, 
-   * first filter the questions and answers separately 
-   * and then prepare them for a join operation 
-   * by extracting the QID value in the first element of a tuple. 
-   * Then, use one of the join operations (which one?) to obtain an RDD[(QID, (Question, Answer))]. 
-   * Then, the last step is to obtain an RDD[(QID, Iterable[(Question, Answer)])]. 
+   * To obtain this, in the groupedPostings method,
+   * first filter the questions and answers separately
+   * and then prepare them for a join operation
+   * by extracting the QID value in the first element of a tuple.
+   * Then, use one of the join operations (which one?) to obtain an RDD[(QID, (Question, Answer))].
+   * Then, the last step is to obtain an RDD[(QID, Iterable[(Question, Answer)])].
    * How can you do that, what method do you use to group by the key of a pair RDD?
    *
    * @param postings
@@ -98,21 +98,25 @@ class StackOverflow extends Serializable {
    */
   def groupedPostings(postings: RDD[Posting]): RDD[(Int, Iterable[(Posting, Posting)])] = {
     postings.cache()
-    val questions = postings.filter{
-      p => p.postingType == 1 
+    val questions = postings.filter {
+      p => p.postingType == 1
     }.map {
       q => (q.id, q)
     }
-    val answers = postings.filter{
-      p => p.postingType == 2 
+    val answers = postings.filter {
+      p => p.postingType == 2
     }.map {
-      a => (a.id, a)
+      a => (a.parentId.get, a)
     }
-    val ret = questions.join(answers).groupByKey()
-    ret
+    questions.join(answers).groupByKey()
   }
 
-  /** Compute the maximum score for each posting */
+  /**
+   * Compute the maximum score for each posting
+   *
+   * @param grouped
+   * @return
+   */
   def scoredPostings(grouped: RDD[(Int, Iterable[(Posting, Posting)])]): RDD[(Posting, Int)] = {
 
     def answerHighScore(as: Array[Posting]): Int = {
@@ -127,6 +131,7 @@ class StackOverflow extends Serializable {
       highScore
     }
 
+    grouped.values
     ???
   }
 
