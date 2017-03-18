@@ -23,7 +23,7 @@ object StackOverflow extends StackOverflow {
     val lines = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
     val raw = rawPostings(lines)
     val grouped = groupedPostings(raw)
-    //val scored = scoredPostings(grouped)
+    val scored = scoredPostings(grouped)
     //val vectors = vectorPostings(scored)
     //    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
 
@@ -36,7 +36,8 @@ object StackOverflow extends StackOverflow {
     def debug(): Unit = {
       val rawDebugString = raw.toDebugString
       val groupedDebugString = grouped.toDebugString
-      println(s"raw:\n$rawDebugString\ngrouped:\n$groupedDebugString")
+      val scoredDebugString = scored.toDebugString
+      println(s"raw:\n$rawDebugString\ngrouped:\n$groupedDebugString\nscored:\n$scoredDebugString")
     }
   }
 
@@ -113,6 +114,10 @@ class StackOverflow extends Serializable {
 
   /**
    * Compute the maximum score for each posting
+   * 
+   * return an RDD containing pairs of (a) questions and 
+   * (b) the score of the answer with the highest score 
+   * (note: this does not have to be the answer marked as "acceptedAnswer"!).
    *
    * @param grouped
    * @return
@@ -131,8 +136,14 @@ class StackOverflow extends Serializable {
       highScore
     }
 
-    grouped.values
-    ???
+    grouped.values.map {
+      pairs => {
+        val unzipped = pairs unzip
+        val answers = unzipped._2.toArray
+        val questions = unzipped._1.toArray
+        (questions(0), answerHighScore(answers))
+      }
+    }
   }
 
   /** Compute the vectors for the kmeans */
