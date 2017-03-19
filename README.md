@@ -60,7 +60,7 @@ Total run time is 193s.
 
 Do you think that partitioning your data would help?
 
-> Yes, partitioning by programming language helps because all questions in a cluster are tagged with the same language. This is true for all clusters. Partitioning reduces shuffling when the data is grouped by their clusters to compute their new centroids. After partitioning, run time dropped dramatically from 1,201s to 193s --- a 10x speedup! 
+> Yes, partitioning by programming language helps because all questions in a cluster are tagged with the same language. This is true for all clusters. Partitioning reduces shuffling when the data is grouped by their clusters to compute their new centroids. After partitioning, run time dropped dramatically from 1,201s to 193s --- a 6x speedup! 
 
 Have you thought about persisting some of your data? Can you think of why persisting your data in memory may be helpful for this algorithm?
 
