@@ -4,6 +4,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.HashPartitioner
 import annotation.tailrec
 import scala.reflect.ClassTag
 
@@ -29,9 +30,9 @@ object StackOverflow extends StackOverflow {
     assert(vectorsCount == 2121822, "Incorrect number of vectors: " + vectorsCount)
 
     val means = kmeans(sampleVectors(vectors), vectors, debug = true)
-    //val results = clusterResults(means, vectors)
+    val results = clusterResults(means, vectors)
     debug()
-    //printResults(results)
+    printResults(results)
     sc.stop()
 
     def debug(): Unit = {
@@ -182,7 +183,7 @@ class StackOverflow extends Serializable {
       case (question, score) => (firstLangInTag(question.tags, langs).getOrElse(-1) * langSpread, score)
     }.filter {
       case (iLang, score) => iLang >= 0
-    }.cache()
+    }.partitionBy(new HashPartitioner(langs.length)).cache()
   }
 
   /** Sample the vectors */

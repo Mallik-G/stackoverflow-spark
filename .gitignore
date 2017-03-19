@@ -3,7 +3,7 @@
 
 bin/
 src/main/resources/stackoverflow/*
-run.txt
+run*.txt
 
 # Eclipse specific
 # =========================
