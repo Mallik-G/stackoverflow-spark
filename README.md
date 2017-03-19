@@ -7,97 +7,51 @@ This repo contains my solution for an assignment from the Coursera course [Big D
 The k-means clustering took 44 iterations to converge. There are 45 clusters:
 
   Median Votes (on answers) | Dominant language (%) | #Questions
-
---------------------------------------|-------------------------------|---------------
-
+----------------------------|-----------------------|---------------
 0 | MATLAB (100.0%) | 3725
-
 1 | CSS (100.0%) | 113598
-
 1 | Groovy (100.0%) | 2729
-
 1 | C# (100.0%) | 361835
-
 1 | Ruby (100.0%) | 54727
-
 1 | PHP (100.0%) | 315734
-
 1 | Objective-C (100.0%) | 94617
-
 1 | Java (100.0%) | 383473
-
 1 | JavaScript (100.0%) | 365647
-
 2 | Perl (100.0%) | 19229
-
 2 | MATLAB (100.0%) | 10656
-
 2 | C++ (100.0%) | 181268
-
 2 | Scala (100.0%) | 12472
-
 2 | Clojure (100.0%) | 3324
-
 2 | Python (100.0%) | 174573
-
 4 | Haskell (100.0%) | 10362
-
 9 | Perl (100.0%) | 4714
-
 10 | Groovy (100.0%) | 310
-
 12 | Clojure (100.0%) | 712
-
 27 | Scala (100.0%) | 679
-
 34 | MATLAB (100.0%) | 107
-
 53 | Haskell (100.0%) | 202
-
 61 | Groovy (100.0%) | 14
-
 66 | Clojure (100.0%) | 57
-
 77 | Perl (100.0%) | 58
-
 79 | C# (100.0%) | 2585
-
 85 | Ruby (100.0%) | 648
-
 89 | Objective-C (100.0%) | 903
-
 130 | Scala (100.0%) | 47
-
 135 | PHP (100.0%) | 512
-
 172 | CSS (100.0%) | 358
-
 223 | C++ (100.0%)  | 251
-
 223 | Python (100.0%) | 413
-
 249 | Java (100.0%) | 483
-
 375 | JavaScript (100.0%) | 433
-
 443 | C# (100.0%) | 147
-
 473 | Objective-C (100.0%) | 82
-
 546 | Ruby (100.0%) | 34
-
 766 | CSS (100.0%) | 26
-
 887 | PHP (100.0%) | 13
-
 1130 | Haskell (100.0%) | 2
-
 1269 | Python (100.0%) | 19
-
 1290 | C++ (100.0%) | 9
-
 1895 | JavaScript (100.0%) | 33
-
 10271 | Java (100.0%) | 2
 
 Total run time is 193s.
@@ -238,9 +192,7 @@ You will see the following code in the main class:
 
 ```scala
 
-  val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv"
-
-    )  
+  val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")  
 
   val raw     = rawPostings(lines)  
 
@@ -254,15 +206,15 @@ You will see the following code in the main class:
 
 It corresponds to the following steps:
 
-lines: the lines from the csv file as strings
+`lines`: the lines from the csv file as strings
 
-raw: the raw Posting entries for each line
+`raw`: the raw Posting entries for each line
 
-grouped: questions and answers grouped together
+`grouped`: questions and answers grouped together
 
-scored: questions and scores
+`scored`: questions and scores
 
-vectors: pairs of (language, score) for each question
+`vectors`: pairs of (language, score) for each question
 
 The first two methods are given to you. You will have to implement the rest.
 
